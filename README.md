@@ -20,7 +20,7 @@ A multi-session SSH terminal (PuTTY / MobaXterm style) with floating picture-in-
 |---|---|
 | Debian, Ubuntu, Kubuntu, Mint | `sudo apt install ./iqbal-terminal-1.1.0.amd64.deb` |
 | Fedora, RHEL, openSUSE | `sudo dnf install ./iqbal-terminal-1.1.0.x86_64.rpm` |
-| Arch, Manjaro, EndeavourOS (pacman) | `sudo pacman -U ./iqbal-terminal-1.1.0.pacman` |
+| Arch, Manjaro, EndeavourOS (pacman) | `sudo pacman -U ./iqbal-terminal-1.1.0.x64.pacman` |
 | Any Linux | `chmod +x iqbal-terminal-1.1.0-x86_64.AppImage && ./iqbal-terminal-1.1.0-x86_64.AppImage` |
 | Windows 10/11 | run `Iqbal-Terminal-Setup-1.1.0.exe` (unsigned: SmartScreen > More info > Run anyway) |
 

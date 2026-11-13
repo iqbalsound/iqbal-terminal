@@ -163,5 +163,6 @@
       "artifactName": "iqbal-terminal-${version}-${arch}.AppImage"
     }
   },
-  "desktopName": "iqbal-terminal.desktop"
+  "desktopName": "iqbal-terminal.desktop",
+  "homepage": "https://github.com/YOUR-USERNAME/iqbal-terminal"
 }
