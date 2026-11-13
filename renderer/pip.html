@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'">
+  <title>Iqbal Terminal (PiP)</title>
+  <link rel="stylesheet" href="vendor/xterm.css">
+  <link rel="stylesheet" href="vendor/fonts.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { display: flex; flex-direction: column; }
+    #pipbar { display: flex; align-items: center; gap: 2px; padding: 3px 6px; background: var(--bg2); border-bottom: 1px solid var(--border); min-height: 32px; }
+    #pipbar .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; padding-left: 4px; }
+    #pipbar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 4px; }
+    #pipbar .dot.closed { background: var(--danger); }
+    #pipbar .icon-btn.on { color: var(--accent); }
+    #pipTerm { flex: 1; min-height: 0; position: relative; background: var(--term-bg, var(--bg)); padding: 4px 4px 2px 6px; }
+    #pipTerm .xterm { height: 100%; }
+    #pipTerm .xterm-viewport { background-color: transparent !important; }
+  </style>
+</head>
+<body>
+  <div id="pipbar">
+    <span class="dot" id="pipDot"></span><span class="title" id="pipTitle">Session</span>
+    <button id="pipSmaller" class="icon-btn" title="Smaller font (Ctrl+-)">A−</button>
+    <button id="pipBigger" class="icon-btn" title="Larger font (Ctrl+=)">A＋</button>
+    <button id="pipOpacity" class="icon-btn" title="Transparency">100%</button>
+    <button id="pipPin" class="icon-btn on" title="Always on top">Pin</button>
+    <button id="pipDock" class="icon-btn" title="Return to a tab in the main window">Dock</button>
+  </div>
+  <div id="pipTerm"></div>
+  <script src="vendor/xterm.js"></script>
+  <script src="vendor/addon-fit.js"></script>
+  <script src="vendor/addon-serialize.js"></script>
+  <script src="vendor/addon-web-links.js"></script>
+  <script src="themes.js"></script>
+  <script src="pip.js"></script>
+</body>
+</html>

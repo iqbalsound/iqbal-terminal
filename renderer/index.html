@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'">
+  <title>Iqbal Terminal</title>
+  <link rel="stylesheet" href="vendor/xterm.css">
+  <link rel="stylesheet" href="vendor/fonts.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="side-head">
+        <span class="side-title">Sessions</span>
+        <button id="btnNewSession" class="icon-btn" title="New session (Ctrl+Shift+N)">＋</button>
+        <button id="btnImportExport" class="icon-btn" title="Import / export sessions">⇅</button>
+      </div>
+      <input id="sessionFilter" type="search" placeholder="Search sessions…" spellcheck="false">
+      <div id="sessionList" class="session-list"></div>
+      <div class="side-foot">
+        <input id="quickConnect" type="text" placeholder="Quick connect: user@host[:port]" spellcheck="false">
+      </div>
+    </aside>
+    <div id="splitter" title="Drag to resize"></div>
+    <main id="main">
+      <div id="topbar">
+        <button id="btnSidebar" class="icon-btn" title="Show / hide sessions">☰</button>
+        <div id="tabs" role="tablist"></div>
+        <button id="btnNewTab" class="icon-btn" title="New session">＋</button>
+        <div class="spacer"></div>
+        <button id="btnPip" class="icon-btn" title="Pop the current session out as a floating PiP window (Ctrl+Shift+P)">PiP</button>
+        <button id="btnEditor" class="icon-btn" title="New text document (Ctrl+Shift+E)">Editor</button>
+        <button id="btnFontMinus" class="icon-btn" title="Smaller font (Ctrl+-)">A−</button>
+        <span id="fontLabel" class="font-label"></span>
+        <button id="btnFontPlus" class="icon-btn" title="Larger font (Ctrl+=)">A＋</button>
+        <button id="btnTheme" class="icon-btn" title="Toggle dark / light theme"></button>
+        <button id="btnSettings" class="icon-btn" title="Settings">⚙</button>
+        <button id="btnAbout" class="icon-btn" title="About">ⓘ</button>
+      </div>
+      <div id="findbar" hidden>
+        <input id="findInput" type="text" placeholder="Find in terminal" spellcheck="false">
+        <button id="findPrev" class="icon-btn" title="Previous (Shift+Enter)">↑</button>
+        <button id="findNext" class="icon-btn" title="Next (Enter)">↓</button>
+        <button id="findClose" class="icon-btn" title="Close (Esc)">×</button>
+      </div>
+      <div id="termHost">
+        <div id="welcome">
+          <div class="welcome-card">
+            <div class="logo">&gt;_</div>
+            <h1>Iqbal Terminal</h1>
+            <p>Multi-session SSH client with PEM and PPK keys.</p>
+            <div class="welcome-actions">
+              <button id="welcomeNew" class="btn primary">New session</button>
+              <button id="welcomeEditor" class="btn">New document</button>
+              <button id="welcomeSettings" class="btn">Settings</button>
+            </div>
+            <ul class="tips">
+              <li><kbd>Ctrl</kbd>+<kbd>C</kbd> copies the selection (or sends interrupt when nothing is selected)</li>
+              <li><kbd>Ctrl</kbd>+<kbd>V</kbd> pastes &nbsp;·&nbsp; <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> finds</li>
+              <li><kbd>Ctrl</kbd>+<kbd>=</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd> change font size &nbsp;·&nbsp; <kbd>Ctrl</kbd>+wheel too</li>
+              <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> pops a session out as a floating PiP window (stays on top)</li>
+              <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> opens the rich text editor</li>
+              <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>W</kbd> closes a tab &nbsp;·&nbsp; <kbd>Ctrl</kbd>+<kbd>PgUp</kbd>/<kbd>PgDn</kbd> switch tabs</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div id="statusbar">
+        <span id="statusLeft"></span>
+        <span class="spacer"></span>
+        <span id="statusRight"></span>
+      </div>
+    </main>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="ctxMenu" class="ctx" hidden></div>
+  <script src="vendor/xterm.js"></script>
+  <script src="vendor/addon-fit.js"></script>
+  <script src="vendor/addon-search.js"></script>
+  <script src="vendor/addon-web-links.js"></script>
+  <script src="vendor/addon-serialize.js"></script>
+  <script src="vendor/marked.js"></script>
+  <script src="vendor/turndown.js"></script>
+  <script src="vendor/purify.js"></script>
+  <script src="themes.js"></script>
+  <script src="editor.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

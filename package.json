@@ -1,0 +1,167 @@
+{
+  "name": "iqbal-terminal",
+  "version": "1.1.0",
+  "description": "Iqbal Terminal - multi-session SSH terminal with PiP windows, PEM/PPK keys, saved sessions, themes and a rich text editor",
+  "main": "main.js",
+  "author": {
+    "name": "Iqbal Uddin Khan",
+    "email": "iqbalsound@yahoo.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "node scripts/vendor.js",
+    "start": "electron .",
+    "dist:linux": "electron-builder --linux deb rpm",
+    "dist:win": "electron-builder --win nsis",
+    "dist:all": "electron-builder --linux deb rpm --win nsis"
+  },
+  "dependencies": {
+    "@fontsource/fira-code": "^5.2.0",
+    "@fontsource/ibm-plex-mono": "^5.2.0",
+    "@fontsource/inconsolata": "^5.2.0",
+    "@fontsource/jetbrains-mono": "^5.2.0",
+    "@fontsource/source-code-pro": "^5.2.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-search": "^0.16.0",
+    "@xterm/addon-serialize": "^0.14.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0",
+    "dompurify": "^3.4.17",
+    "hash-wasm": "^4.13.0",
+    "marked": "^18.2.0",
+    "ssh2": "^1.17.0",
+    "turndown": "^7.2.5"
+  },
+  "devDependencies": {
+    "electron": "^45.3.1",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "pk.edu.hamdard.iqbal.terminal",
+    "productName": "Iqbal Terminal",
+    "copyright": "Copyright \u00a9 2026 Iqbal Uddin Khan",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "lib/**",
+      "renderer/**",
+      "assets/**",
+      "LICENSE",
+      "package.json",
+      "!**/*.map",
+      "!node_modules/**/{test,tests,docs,example,examples}/**"
+    ],
+    "asar": true,
+    "npmRebuild": false,
+    "compression": "normal",
+    "linux": {
+      "target": [
+        "deb",
+        "rpm",
+        "pacman",
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "category": "System;TerminalEmulator;Network;",
+      "synopsis": "Multi-session SSH terminal with PiP windows and rich text editor",
+      "description": "SSH terminal emulator with multiple sessions, floating picture-in-picture windows, PEM/OpenSSH/PPK key support, saved sessions, themes, system tray and a built-in rich text editor.",
+      "maintainer": "Iqbal Uddin Khan <iqbalsound@yahoo.com>",
+      "vendor": "Iqbal Uddin Khan",
+      "executableName": "iqbal-terminal",
+      "desktop": {
+        "entry": {
+          "Keywords": "ssh;terminal;putty;mobaxterm;remote;",
+          "StartupWMClass": "iqbal-terminal"
+        }
+      },
+      "syncDesktopName": true
+    },
+    "deb": {
+      "packageName": "iqbal-terminal",
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "libasound2t64 | libasound2"
+      ],
+      "recommends": [
+        "gnome-keyring | kwalletmanager"
+      ],
+      "fpm": [
+        "--license=MIT"
+      ]
+    },
+    "rpm": {
+      "packageName": "iqbal-terminal",
+      "depends": [
+        "gtk3",
+        "libnotify",
+        "nss",
+        "libXScrnSaver",
+        "libXtst",
+        "xdg-utils",
+        "at-spi2-core",
+        "libuuid",
+        "libsecret"
+      ],
+      "fpm": [
+        "--license=MIT"
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "signExecutable": false,
+      "legalTrademarks": "Iqbal Terminal"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Iqbal Terminal",
+      "artifactName": "Iqbal-Terminal-Setup-${version}.${ext}",
+      "license": "build/license.txt"
+    },
+    "artifactName": "iqbal-terminal-${version}.${arch}.${ext}",
+    "pacman": {
+      "packageName": "iqbal-terminal",
+      "depends": [
+        "gtk3",
+        "nss",
+        "libxss",
+        "libxtst",
+        "libnotify",
+        "at-spi2-core",
+        "alsa-lib",
+        "libsecret",
+        "xdg-utils"
+      ],
+      "fpm": [
+        "--license=MIT"
+      ]
+    },
+    "appImage": {
+      "artifactName": "iqbal-terminal-${version}-${arch}.AppImage"
+    }
+  },
+  "desktopName": "iqbal-terminal.desktop"
+}
