@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>pk.edu.hamdard.iqbal.terminal</id>
+  <name>Iqbal Terminal</name>
+  <summary>SSH terminal with SFTP file manager, floating windows and a text editor</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="pk.edu.hamdard.iqbal"><name>Iqbal Uddin Khan</name></developer>
+  <description>
+    <p>Iqbal Terminal is a multi-session SSH client in the spirit of PuTTY and MobaXterm. It supports PEM, OpenSSH and PuTTY PPK keys, saved sessions, themes and a system tray icon.</p>
+    <ul>
+      <li>SFTP file manager: browse remote folders, upload and download files or whole folders</li>
+      <li>Picture-in-picture: float any session in its own always-on-top window</li>
+      <li>Built-in rich text editor with Markdown, plain text and HTML export</li>
+      <li>Dark, light and black-and-green themes with many terminal color schemes</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">iqbal-terminal.desktop</launchable>
+  <provides><binary>iqbal-terminal</binary></provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="2.0.0" date="2026-11-14"><description><p>SFTP file manager, black-and-green theme, PiP windows and rich text editor.</p></description></release>
+  </releases>
+</component>

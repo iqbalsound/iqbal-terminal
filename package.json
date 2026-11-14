@@ -1,7 +1,7 @@
 {
   "name": "iqbal-terminal",
-  "version": "1.1.0",
-  "description": "Iqbal Terminal - multi-session SSH terminal with PiP windows, PEM/PPK keys, saved sessions, themes and a rich text editor",
+  "version": "2.0.0",
+  "description": "Iqbal Terminal - multi-session SSH terminal with SFTP file manager, PiP windows, PEM/PPK keys, themes and a rich text editor",
   "main": "main.js",
   "author": {
     "name": "Iqbal Uddin Khan",
@@ -13,7 +13,9 @@
     "start": "electron .",
     "dist:linux": "electron-builder --linux deb rpm",
     "dist:win": "electron-builder --win nsis",
-    "dist:all": "electron-builder --linux deb rpm --win nsis"
+    "dist:all": "electron-builder --linux deb rpm pacman AppImage --win nsis",
+    "dist:snap": "electron-builder --linux snap",
+    "dist:flatpak": "electron-builder --linux flatpak"
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.2.0",
@@ -67,8 +69,8 @@
       ],
       "icon": "build/icon.png",
       "category": "System;TerminalEmulator;Network;",
-      "synopsis": "Multi-session SSH terminal with PiP windows and rich text editor",
-      "description": "SSH terminal emulator with multiple sessions, floating picture-in-picture windows, PEM/OpenSSH/PPK key support, saved sessions, themes, system tray and a built-in rich text editor.",
+      "synopsis": "SSH terminal with SFTP file manager, PiP windows and text editor",
+      "description": "SSH terminal emulator with multiple sessions, an SFTP file manager (upload and download files or folders), floating picture-in-picture windows, PEM/OpenSSH/PPK keys, themes, system tray and a built-in rich text editor.",
       "maintainer": "Iqbal Uddin Khan <iqbalsound@yahoo.com>",
       "vendor": "Iqbal Uddin Khan",
       "executableName": "iqbal-terminal",
@@ -98,7 +100,8 @@
         "gnome-keyring | kwalletmanager"
       ],
       "fpm": [
-        "--license=MIT"
+        "--license=MIT",
+        "build/linux/pk.edu.hamdard.iqbal.terminal.metainfo.xml=/usr/share/metainfo/pk.edu.hamdard.iqbal.terminal.metainfo.xml"
       ]
     },
     "rpm": {
@@ -115,7 +118,8 @@
         "libsecret"
       ],
       "fpm": [
-        "--license=MIT"
+        "--license=MIT",
+        "build/linux/pk.edu.hamdard.iqbal.terminal.metainfo.xml=/usr/share/metainfo/pk.edu.hamdard.iqbal.terminal.metainfo.xml"
       ]
     },
     "win": {
@@ -128,7 +132,6 @@
         }
       ],
       "icon": "build/icon.png",
-      "signExecutable": false,
       "legalTrademarks": "Iqbal Terminal"
     },
     "nsis": {
@@ -156,11 +159,44 @@
         "xdg-utils"
       ],
       "fpm": [
-        "--license=MIT"
+        "--license=MIT",
+        "build/linux/pk.edu.hamdard.iqbal.terminal.metainfo.xml=/usr/share/metainfo/pk.edu.hamdard.iqbal.terminal.metainfo.xml"
       ]
     },
     "appImage": {
       "artifactName": "iqbal-terminal-${version}-${arch}.AppImage"
+    },
+    "snap": {
+      "summary": "SSH terminal with SFTP file manager and PiP windows",
+      "grade": "stable",
+      "confinement": "strict",
+      "plugs": [
+        "default",
+        "ssh-keys",
+        "removable-media",
+        "password-manager-service",
+        "network"
+      ]
+    },
+    "flatpak": {
+      "runtime": "org.freedesktop.Platform",
+      "runtimeVersion": "24.08",
+      "sdk": "org.freedesktop.Sdk",
+      "base": "org.electronjs.Electron2.BaseApp",
+      "baseVersion": "24.08",
+      "license": "LICENSE",
+      "finishArgs": [
+        "--share=network",
+        "--share=ipc",
+        "--socket=x11",
+        "--socket=wayland",
+        "--socket=pulseaudio",
+        "--device=dri",
+        "--filesystem=home",
+        "--talk-name=org.freedesktop.Notifications",
+        "--talk-name=org.kde.StatusNotifierWatcher",
+        "--talk-name=org.freedesktop.secrets"
+      ]
     }
   },
   "desktopName": "iqbal-terminal.desktop",

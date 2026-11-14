@@ -9,6 +9,7 @@
     for (const [k, v] of Object.entries(props || {})) {
       if (v == null || v === false) continue;
       if (k === 'class') e.className = v;
+      else if (k === 'dataset') Object.assign(e.dataset, v);
       else if (k === 'style') e.style.cssText = v;
       else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
       else if (k in e && k !== 'list') e[k] = v;
@@ -51,7 +52,8 @@
       const f = list.find((s) => s.name === settings.termScheme);
       if (f) return f;
     }
-    return list.find((s) => s.name === (effectiveUiTheme() === 'dark' ? 'Iqbal Dark' : 'Iqbal Light'));
+    const auto = { dark: 'Iqbal Dark', light: 'Iqbal Light', matrix: 'Matrix Green' }[effectiveUiTheme()] || 'Iqbal Dark';
+    return list.find((s) => s.name === auto);
   }
   function termOptions() {
     return {
@@ -62,7 +64,7 @@
   }
   async function applySettings() {
     document.documentElement.dataset.theme = effectiveUiTheme();
-    $('#btnTheme').textContent = effectiveUiTheme() === 'dark' ? 'Light' : 'Dark';
+    $('#btnTheme').textContent = { dark: 'Light', light: 'Matrix', matrix: 'Dark' }[effectiveUiTheme()] || 'Light';
     const scheme = resolveScheme();
     document.documentElement.style.setProperty('--term-bg', scheme.colors.background);
     $('#fontLabel').textContent = settings.fontSize;
@@ -298,7 +300,9 @@
   async function openTab(sess, opts = {}) {
     await ensureFont(settings.fontFamily, settings.fontSize);
     const id = uid();
-    const pane = h('div', { class: 'pane hidden' });
+    const pane = h('div', { class: 'pane hidden', dataset: { id } });
+    const termWrap = h('div', { class: 'term-wrap' });
+    pane.append(termWrap);
     $('#termHost').append(pane);
     const term = new Terminal(termOptions());
     const fit = new FitAddon.FitAddon();
@@ -306,7 +310,8 @@
     const serialize = new SerializeAddon.SerializeAddon();
     term.loadAddon(fit); term.loadAddon(search); term.loadAddon(serialize);
     term.loadAddon(new WebLinksAddon.WebLinksAddon((_e, uri) => api.openExternal(uri)));
-    term.open(pane);
+    term.open(termWrap);
+    new ResizeObserver(() => { if (id === activeId) requestAnimationFrame(fitActive); }).observe(termWrap);
     const tab = { id, kind: 'ssh', serialize, popped: false, openInPip: !!opts.pip, sess: { ...sess }, term, fit, search, pane, state: 'connecting', title: sess.name || `${sess.username}@${sess.host}`, activity: false, fp: '' };
     tabs.set(id, tab);
 
@@ -326,7 +331,7 @@
     term.onResize(({ cols, rows }) => { if (tab.state === 'connected') api.resize(id, cols, rows); updateStatus(); });
     term.onSelectionChange(() => { if (settings.copyOnSelect && term.hasSelection()) api.clipboard.write(term.getSelection()); });
     term.onTitleChange((t) => { tab.remoteTitle = t; if (id === activeId) document.title = `${t} — Iqbal Terminal`; });
-    pane.addEventListener('contextmenu', (e) => {
+    termWrap.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       if (settings.rightClick === 'paste') { if (term.hasSelection()) { copySelection(tab); term.clearSelection(); } else pasteInto(tab); return; }
       showCtx(e.clientX, e.clientY, [
@@ -334,11 +339,11 @@
         { label: 'Select all', action: () => term.selectAll() }, { label: 'Find…', kb: 'Ctrl+Shift+F', action: openFind }, '-',
         { label: 'Clear scrollback', action: () => term.clear() },
         ...(tab.state === 'closed' ? [{ label: 'Reconnect', kb: 'Enter', action: () => connectTab(tab) }] : []),
-        { label: 'Pop out (PiP)', kb: 'Ctrl+Shift+P', action: () => popOut(tab) },
+        { label: 'File manager', kb: 'Ctrl+Shift+D', action: () => toggleFiles(tab) }, { label: 'Pop out (PiP)', kb: 'Ctrl+Shift+P', action: () => popOut(tab) },
         { label: 'Duplicate tab', kb: 'Ctrl+Shift+T', action: () => openTab(tab.sess) }, { label: 'Close tab', kb: 'Ctrl+Shift+W', action: () => closeTab(id) }]);
     });
-    pane.addEventListener('wheel', (e) => { if (e.ctrlKey) { e.preventDefault(); setFontSize(settings.fontSize + (e.deltaY < 0 ? 1 : -1)); } }, { passive: false });
-    pane.addEventListener('mousedown', () => term.focus());
+    termWrap.addEventListener('wheel', (e) => { if (e.ctrlKey) { e.preventDefault(); setFontSize(settings.fontSize + (e.deltaY < 0 ? 1 : -1)); } }, { passive: false });
+    termWrap.addEventListener('mousedown', () => term.focus());
 
     activateTab(id);
     connectTab(tab);
@@ -351,7 +356,7 @@
     if (!Object.keys(secrets).length) tab.term.write(`\x1b[90mConnecting to ${s.username}@${s.host}:${s.port} …\x1b[0m\r\n`);
     const res = await api.connect({ id: tab.id, sessionId: s.id || null, params: s, secrets, remember, cols: tab.term.cols, rows: tab.term.rows });
     if (!tabs.has(tab.id)) return;
-    if (res.ok) { tab.fp = res.fingerprint || ''; setState(tab, 'connected'); api.resize(tab.id, tab.term.cols, tab.term.rows); if (tab.openInPip) { tab.openInPip = false; popOut(tab); } return; }
+    if (res.ok) { tab.fp = res.fingerprint || ''; setState(tab, 'connected'); api.resize(tab.id, tab.term.cols, tab.term.rows); if (tab.sftp && !tab.sftp.el.hidden) tab.sftp.refresh(); if (tab.openInPip) { tab.openInPip = false; popOut(tab); } return; }
     if (res.needs) {
       const label = res.needs === 'password' ? `Password for ${s.username}@${s.host}` : `Passphrase for ${basename(s.keyPath)}`;
       const r = await promptSecret(label, res.message, !!s.id && info.secretsAvailable);
@@ -371,7 +376,7 @@
       onmousedown: (e) => { if (e.button === 1) { e.preventDefault(); closeTab(t.id); } else if (e.button === 0) activateTab(t.id); },
       oncontextmenu: (e) => { e.preventDefault(); showCtx(e.clientX, e.clientY, t.kind === 'editor'
         ? [{ label: 'Save', kb: 'Ctrl+S', action: () => t.editor.save() }, { label: 'Close tab', action: () => closeTab(t.id) }]
-        : [{ label: t.popped ? 'Dock back to tab' : 'Pop out (PiP)', kb: 'Ctrl+Shift+P', action: () => popOut(t) }, { label: 'Duplicate tab', action: () => openTab(t.sess) }, '-', { label: 'Close tab', action: () => closeTab(t.id) }]); }
+        : [{ label: 'File manager', kb: 'Ctrl+Shift+D', action: () => toggleFiles(t) }, { label: t.popped ? 'Dock back to tab' : 'Pop out (PiP)', kb: 'Ctrl+Shift+P', action: () => popOut(t) }, { label: 'Duplicate tab', action: () => openTab(t.sess) }, '-', { label: 'Close tab', action: () => closeTab(t.id) }]); }
     }, h('span', { class: 'dot ' + (t.kind === 'editor' ? 'editor' : t.popped ? 'popped' : t.state) }),
     h('span', { class: 'label' }, (t.popped ? 'PiP · ' : '') + t.title + (t.dirty ? ' •' : '')),
     h('span', { class: 'x', title: 'Close', onmousedown: (e) => e.stopPropagation(), onclick: () => closeTab(t.id) }, '×'))));
@@ -390,7 +395,7 @@
   function closeTab(id) {
     const t = tabs.get(id); if (!t) return;
     if (t.kind === 'editor') { if (t.dirty && !confirm(`Discard unsaved changes to ${t.title}?`)) return; }
-    else { if (t.state === 'connected' && !confirm(`Disconnect from ${t.title}?`)) return; api.disconnect(id); t.term.dispose(); }
+    else { if (t.state === 'connected' && !confirm(`Disconnect from ${t.title}?`)) return; api.disconnect(id); if (t.sftp) t.sftp.destroy(); t.term.dispose(); }
     t.pane.remove(); tabs.delete(id);
     if (activeId === id) {
       activeId = null;
@@ -417,6 +422,23 @@
     $('#statusRight').textContent = `${t ? t.term.cols + '×' + t.term.rows + ' · ' : ''}${settings.fontFamily} ${settings.fontSize}px · ${connected} active`;
   }
 
+  // ---------------------------------------------------------------- remote file manager (SFTP)
+  function toggleFiles(tab) {
+    if (!tab || tab.kind !== 'ssh') return toast('File manager', 'Select an SSH session tab first.');
+    if (tab.popped) return toast('File manager', 'Dock the session back into a tab to use the file manager.');
+    if (!tab.sftp) {
+      if (tab.state !== 'connected') return toast('File manager', 'Connect the session first.');
+      tab.sftp = SftpPanel.create({ api, connId: tab.id, ui: { promptText, toast, showCtx }, onClose: () => toggleFiles(tab) });
+      tab.pane.append(tab.sftp.el);
+    }
+    const show = tab.sftp.el.hidden;
+    if (show && tab.state !== 'connected') return toast('File manager', 'Reconnect the session first.');
+    tab.sftp.el.hidden = !show;
+    if (show) tab.sftp.load(tab.sftp.loaded ? '' : '').then(() => {});
+    requestAnimationFrame(() => { fitActive(); if (!show) tab.term.focus(); });
+  }
+  api.onSftpProgress((ev) => { const t = tabs.get(ev.id); if (t && t.sftp) t.sftp.onProgress(ev); });
+
   // ---------------------------------------------------------------- PiP (floating session windows)
   async function popOut(tab) {
     if (!tab || tab.kind !== 'ssh') return toast('Picture-in-picture', 'Select an SSH session tab first.');
@@ -425,6 +447,7 @@
     const r = await api.pip.open({ id: tab.id, title: tab.title, buffer: tab.serialize.serialize(), cols: tab.term.cols, rows: tab.term.rows });
     if (!r.ok) return toast('Picture-in-picture', r.message || 'Could not open the floating window.');
     tab.popped = true;
+    if (tab.sftp) tab.sftp.el.hidden = true;
     tab.cover = h('div', { class: 'popped-cover' }, h('div', {}, `${tab.title} is floating in its own window.`),
       h('div', { style: 'display:flex;gap:8px' },
         h('button', { class: 'btn', onclick: () => api.pip.open({ id: tab.id, title: tab.title }) }, 'Show window'),
@@ -535,7 +558,7 @@
 
     const body = h('div', { class: 'form-grid' },
       h('div', { class: 'section' }, 'Appearance'),
-      h('label', {}, 'Application theme'), sel([['dark', 'Dark'], ['light', 'Light'], ['system', 'Follow system']], settings.uiTheme, (v) => saveSettings({ uiTheme: v })),
+      h('label', {}, 'Application theme'), sel([['dark', 'Dark'], ['light', 'Light'], ['matrix', 'Black & green (Matrix)'], ['system', 'Follow system']], settings.uiTheme, (v) => saveSettings({ uiTheme: v })),
       h('label', {}, 'Terminal colors'), sel([['auto', 'Automatic (match theme)'], ...window.TERM_SCHEMES.map((s) => [s.name, `${s.name} (${s.kind})`])], settings.termScheme, (v) => saveSettings({ termScheme: v })),
       h('label', {}, 'Font'), h('div', {}, fontSel, custom),
       h('label', {}, 'Font size'), num(settings.fontSize, 8, 40, 1, (v) => saveSettings({ fontSize: v })),
@@ -564,7 +587,7 @@
         ...row('License', `${info.license} — free to use, modify and share`),
         info.repo ? row('Source', String(info.repo).replace(/^git\+/, '')) : [],
         ...row('Built with', `Electron ${info.electron} · Chromium ${info.chrome} · Node ${info.node}`),
-        h('div', { class: 'hint full', style: 'margin-top:6px' }, 'Multi-session SSH terminal with floating PiP windows, PEM / OpenSSH / PPK keys and a built-in rich text editor.'),
+        h('div', { class: 'hint full', style: 'margin-top:6px' }, 'Multi-session SSH terminal with an SFTP file manager, floating PiP windows, PEM / OpenSSH / PPK keys and a built-in rich text editor.'),
         h('div', { class: 'hint full' }, `Copyright © 2026 ${info.author}. Provided “as is”, without warranty.`)),
       buttons: [{ label: 'OK', kind: 'primary', primary: true }]
     });
@@ -594,6 +617,7 @@
     if (ctrl && e.shiftKey && e.code === 'KeyW') return consume(() => closeTab(activeId));
     if (ctrl && e.shiftKey && e.code === 'KeyF') return consume(openFind);
     if (ctrl && e.shiftKey && e.code === 'KeyP') return consume(() => popOut(tabs.get(activeId)));
+    if (ctrl && e.shiftKey && e.code === 'KeyD') return consume(() => toggleFiles(tabs.get(activeId)));
     if (ctrl && e.shiftKey && e.code === 'KeyE') return consume(openEditor);
     if (ctrl && (e.code === 'PageDown' || (e.code === 'Tab' && !e.shiftKey))) return consume(() => cycleTab(1));
     if (ctrl && (e.code === 'PageUp' || (e.code === 'Tab' && e.shiftKey))) return consume(() => cycleTab(-1));
@@ -615,9 +639,10 @@
   $('#btnFontPlus').onclick = () => zoomActive(1);
   $('#btnFontMinus').onclick = () => zoomActive(-1);
   $('#btnPip').onclick = () => popOut(tabs.get(activeId));
+  $('#btnFiles').onclick = () => toggleFiles(tabs.get(activeId));
   $('#btnEditor').onclick = openEditor;
   $('#welcomeEditor').onclick = openEditor;
-  $('#btnTheme').onclick = () => saveSettings({ uiTheme: effectiveUiTheme() === 'dark' ? 'light' : 'dark' });
+  $('#btnTheme').onclick = () => saveSettings({ uiTheme: { dark: 'light', light: 'matrix', matrix: 'dark' }[effectiveUiTheme()] || 'dark' });
   $('#sessionFilter').addEventListener('input', renderSessions);
   $('#quickConnect').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.value.trim()) { quickConnect(e.target.value); e.target.value = ''; } });
   $('#btnSidebar').onclick = () => {

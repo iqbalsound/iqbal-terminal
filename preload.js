@@ -1,5 +1,5 @@
 'use strict';
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const invoke = (ch) => (...a) => ipcRenderer.invoke(ch, ...a);
 const listen = (ch) => (cb) => {
   const h = (_e, ...a) => cb(...a);
@@ -25,6 +25,10 @@ contextBridge.exposeInMainWorld('api', {
   pip: { open: invoke('pip:open'), init: invoke('pip:init'), dock: (id, payload) => ipcRenderer.send('pip:dock', id, payload),
     askDock: (id) => ipcRenderer.send('pip:ask-dock', id),
     setOnTop: (f) => ipcRenderer.send('pip:set-on-top', f), setOpacity: (v) => ipcRenderer.send('pip:set-opacity', v) },
+  sftp: { list: invoke('sftp:list'), download: invoke('sftp:download'), upload: invoke('sftp:upload'), mkdir: invoke('sftp:mkdir'), rename: invoke('sftp:rename'),
+    remove: invoke('sftp:remove'), cancel: (jobId) => ipcRenderer.send('sftp:cancel', jobId) },
+  pathForFile: (f) => { try { return webUtils.getPathForFile(f); } catch (_) { return ''; } },
+  onSftpProgress: listen('sftp:progress'),
   file: { open: invoke('file:open'), save: invoke('file:save') },
   onDocked: listen('pip:docked'), onRequestDock: listen('pip:request-dock'),
   onData: listen('ssh:data'), onClosed: listen('ssh:closed'), onKbd: listen('ssh:kbd'), onNewSession: listen('ui:new-session')

@@ -17,6 +17,7 @@ const conns = new Map();       // tab id -> { client, stream, ready, ... }
 const pipWins = new Map();     // tab id -> floating (PiP) BrowserWindow
 const pipInit = new Map();     // tab id -> data used to seed a PiP terminal
 const pkg = require('./package.json');
+let sftpApi = { cancelFor() {} };
 const pendingKbd = new Map();  // request id -> callback
 
 // ------------------------------------------------------------------ storage
@@ -135,7 +136,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: saved.width || 1200, height: saved.height || 760, ...(fits ? { x: saved.x, y: saved.y } : {}),
     minWidth: 620, minHeight: 380, show: false, title: APP_TITLE, icon: ICON, resizable: true,
-    backgroundColor: settings.uiTheme === 'light' ? '#ffffff' : '#0d1117',
+    backgroundColor: settings.uiTheme === 'light' ? '#ffffff' : settings.uiTheme === 'matrix' ? '#000000' : '#0d1117',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false }
   });
   win.setMenuBarVisibility(false);
@@ -223,6 +224,7 @@ function dropConn(id, reason) {
   const c = conns.get(id);
   if (!c) return;
   conns.delete(id);
+  sftpApi.cancelFor(id);
   try { c.client.end(); } catch (_) { /* ignore */ }
   if (c.ready) sendConn(id, 'ssh:closed', { id, reason: reason || '' });
   updateTray();
@@ -507,6 +509,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', showWindow);
   app.whenReady().then(() => {
+    sftpApi = require('./lib/sftp').register({ ipcMain, dialog, getWin: () => (win && !win.isDestroyed() ? win : null), send, getConn: (id) => conns.get(id) });
     Menu.setApplicationMenu(null);
     createWindow();
     createTray();

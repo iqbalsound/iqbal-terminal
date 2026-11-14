@@ -1,0 +1,28 @@
+# Builds the Snap and uploads it to the Snap Store (stable channel). Needs a Snap Store account.
+# NOT TESTED by the author: first run on a throw-away tag. See docs/RELEASING.md.
+name: Publish Snap
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  snap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: sudo snap install snapcraft --classic
+      - run: npm ci
+      - run: npx electron-builder --linux snap --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snap
+          path: dist/*.snap
+      - name: Upload to the Snap Store
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: snapcraft upload --release=stable dist/*.snap

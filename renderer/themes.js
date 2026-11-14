@@ -9,6 +9,8 @@ const mk = (name, kind, bg, fg, cursor, sel, ansi) => ({
   }
 });
 window.TERM_SCHEMES = [
+  mk('Matrix Green', 'dark', '#000000', '#00ff41', '#00ff41', '#0a3d12',
+    ['#000000', '#ff5555', '#00ff41', '#c8ff00', '#3a9bff', '#d65cff', '#00ffd0', '#b6ffb6', '#2d6a35', '#ff7b7b', '#66ff8c', '#e6ff66', '#7cbcff', '#e592ff', '#66ffe0', '#eaffea']),
   mk('Iqbal Dark', 'dark', '#0d1117', '#e6edf3', '#58a6ff', '#264f78',
     ['#484f58', '#ff7b72', '#3fb950', '#d29922', '#58a6ff', '#bc8cff', '#39c5cf', '#b1bac4', '#6e7681', '#ffa198', '#56d364', '#e3b341', '#79c0ff', '#d2a8ff', '#56d4dd', '#f0f6fc']),
   mk('Iqbal Light', 'light', '#ffffff', '#1f2328', '#0969da', '#b6d6fd',

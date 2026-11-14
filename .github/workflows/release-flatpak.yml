@@ -1,0 +1,32 @@
+# Builds a Flatpak bundle and attaches it to the GitHub Release (also usable as your own Flatpak download).
+# NOT TESTED by the author. Flathub itself is a separate submission: see docs/RELEASING.md.
+name: Build Flatpak
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Node.js
+        run: dnf install -y nodejs npm || (apk add --no-cache nodejs npm) || true
+      - run: npm ci
+      - run: npx electron-builder --linux flatpak --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flatpak
+          path: dist/*.flatpak
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.flatpak

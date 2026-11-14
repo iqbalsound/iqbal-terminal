@@ -1,0 +1,41 @@
+# Publishes the .deb into a signed APT repository kept on the gh-pages branch (served by GitHub Pages).
+# One-time setup: see docs/RELEASING.md (GPG key, two secrets, enable Pages from the gh-pages branch).
+name: Publish APT repository
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: sudo apt-get update && sudo apt-get install -y apt-utils gnupg
+      - run: npm ci
+      - run: npx electron-builder --linux deb --publish never
+      - name: Import signing key
+        run: echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+      - name: Get existing repository (keeps older versions)
+        run: |
+          git fetch origin gh-pages:gh-pages || true
+          if git rev-parse --verify gh-pages >/dev/null 2>&1; then git worktree add apt-site gh-pages; else mkdir apt-site; fi
+      - name: Build and sign repository
+        env:
+          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+        run: ./scripts/make-apt-repo.sh apt-site "$(ls dist/*.deb | head -1)" "${{ secrets.APT_GPG_KEY_ID }}"
+      - name: Publish to gh-pages
+        run: |
+          cd apt-site
+          [ -d .git ] || git init -b gh-pages
+          git config user.name "release-bot"; git config user.email "release-bot@users.noreply.github.com"
+          touch .nojekyll
+          git add -A && git commit -m "APT repository for ${GITHUB_REF_NAME}" || echo "nothing to commit"
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:gh-pages

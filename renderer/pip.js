@@ -6,10 +6,10 @@
   const [settings, init] = await Promise.all([api.settings.get(), api.pip.init(id)]);
   if (!init) { document.body.textContent = 'This session is no longer available.'; return; }
 
-  const dark = settings.uiTheme === 'system' ? matchMedia('(prefers-color-scheme: dark)').matches : settings.uiTheme === 'dark';
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  const theme = settings.uiTheme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : settings.uiTheme;
+  document.documentElement.dataset.theme = theme;
   const scheme = (settings.termScheme !== 'auto' && window.TERM_SCHEMES.find((x) => x.name === settings.termScheme)) ||
-    window.TERM_SCHEMES.find((x) => x.name === (dark ? 'Iqbal Dark' : 'Iqbal Light'));
+    window.TERM_SCHEMES.find((x) => x.name === ({ dark: 'Iqbal Dark', light: 'Iqbal Light', matrix: 'Matrix Green' }[theme] || 'Iqbal Dark'));
   document.documentElement.style.setProperty('--term-bg', scheme.colors.background);
   $('#pipTitle').textContent = init.title;
   document.title = `${init.title} (PiP)`;

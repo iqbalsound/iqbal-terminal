@@ -29,6 +29,7 @@
         <div id="tabs" role="tablist"></div>
         <button id="btnNewTab" class="icon-btn" title="New session">＋</button>
         <div class="spacer"></div>
+        <button id="btnFiles" class="icon-btn" title="Show / hide the remote file manager (Ctrl+Shift+D)">Files</button>
         <button id="btnPip" class="icon-btn" title="Pop the current session out as a floating PiP window (Ctrl+Shift+P)">PiP</button>
         <button id="btnEditor" class="icon-btn" title="New text document (Ctrl+Shift+E)">Editor</button>
         <button id="btnFontMinus" class="icon-btn" title="Smaller font (Ctrl+-)">A−</button>
@@ -59,6 +60,7 @@
               <li><kbd>Ctrl</kbd>+<kbd>C</kbd> copies the selection (or sends interrupt when nothing is selected)</li>
               <li><kbd>Ctrl</kbd>+<kbd>V</kbd> pastes &nbsp;·&nbsp; <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> finds</li>
               <li><kbd>Ctrl</kbd>+<kbd>=</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd> change font size &nbsp;·&nbsp; <kbd>Ctrl</kbd>+wheel too</li>
+              <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> opens the file manager: browse, upload and download files and folders</li>
               <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> pops a session out as a floating PiP window (stays on top)</li>
               <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> opens the rich text editor</li>
               <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>W</kbd> closes a tab &nbsp;·&nbsp; <kbd>Ctrl</kbd>+<kbd>PgUp</kbd>/<kbd>PgDn</kbd> switch tabs</li>
@@ -85,6 +87,7 @@
   <script src="vendor/purify.js"></script>
   <script src="themes.js"></script>
   <script src="editor.js"></script>
+  <script src="sftp.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
