@@ -8,7 +8,7 @@ GitHub's servers (Actions) build the installers and attach them to a Release usi
 ssh-keygen -t ed25519 -C "iqbalsound@yahoo.com"
 cat ~/.ssh/id_ed25519.pub            # paste into GitHub > Settings > SSH and GPG keys
 ssh -T git@github.com                # should greet you by name
-git remote add origin git@github.com:<your-username>/iqbal-terminal.git
+git remote add origin git@github.com:iqbalsound/iqbal-terminal.git
 git push -u origin main
 ```
 Then change `homepage` in `package.json` to your repository URL and commit.
@@ -22,7 +22,9 @@ git tag -a v2.0.0 -m "Iqbal Terminal 2.0.0"
 git push origin main
 git push origin v2.0.0
 ```
-The tag starts these workflows (`.github/workflows/`). Watch them in the repository's **Actions** tab.
+The tag starts the workflows in `.github/workflows/` (Windows and Linux). The APT, Snap and Flatpak workflows are parked in
+`.github/workflows-optional/` because they need secrets; move one into `.github/workflows/` (`git mv`) once its setup below is done.
+Watch runs in the repository's **Actions** tab.
 
 | Workflow | Produces | Needs |
 |---|---|---|
@@ -62,8 +64,8 @@ rsync -avz apt-site/ you@your-server:/var/www/apt/
 Users install with:
 ```bash
 sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://<your-username>.github.io/iqbal-terminal/iqbal-terminal-archive-keyring.gpg | sudo tee /etc/apt/keyrings/iqbal-terminal.gpg >/dev/null
-echo "deb [signed-by=/etc/apt/keyrings/iqbal-terminal.gpg] https://<your-username>.github.io/iqbal-terminal stable main" | sudo tee /etc/apt/sources.list.d/iqbal-terminal.list
+curl -fsSL https://iqbalsound.github.io/iqbal-terminal/iqbal-terminal-archive-keyring.gpg | sudo tee /etc/apt/keyrings/iqbal-terminal.gpg >/dev/null
+echo "deb [signed-by=/etc/apt/keyrings/iqbal-terminal.gpg] https://iqbalsound.github.io/iqbal-terminal stable main" | sudo tee /etc/apt/sources.list.d/iqbal-terminal.list
 sudo apt update && sudo apt install iqbal-terminal
 ```
 This is a **third-party repository** (like Google Chrome's), not the official Debian/Ubuntu archives.
@@ -84,7 +86,7 @@ Test locally first: `npm run dist:snap`, then `sudo snap install --dangerous dis
 `release-flatpak.yml` builds an installable bundle (`flatpak install --user iqbal-terminal-2.0.0.flatpak`).
 **Flathub** (the public store) is a separate process: fork `github.com/flathub/flathub`, add a manifest and open a pull request;
 reviewers must approve. Before submitting you must (a) use an app ID tied to a domain or GitHub account you control
-(for example `io.github.<your-username>.IqbalTerminal`; change `appId` in `package.json`), (b) make the build run from source
+(for example `io.github.iqbalsound.IqbalTerminal`; change `appId` in `package.json`), (b) make the build run from source
 without network access, and (c) check the runtime version in `package.json` (`runtimeVersion`) is still supported.
 Until then, ship the `.flatpak` bundle from your Releases page.
 

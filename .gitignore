@@ -3,3 +3,10 @@ dist/
 renderer/vendor/
 *.log
 .DS_Store
+
+# secrets - never commit
+*.pfx
+*.p12
+*.key
+credentials.txt
+*secret*

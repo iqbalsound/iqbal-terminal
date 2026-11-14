@@ -200,5 +200,9 @@
     }
   },
   "desktopName": "iqbal-terminal.desktop",
-  "homepage": "https://github.com/YOUR-USERNAME/iqbal-terminal"
+  "homepage": "https://github.com/iqbalsound/iqbal-terminal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iqbalsound/iqbal-terminal.git"
+  }
 }
