@@ -1,5 +1,3 @@
-# Publishes the .deb into a signed APT repository kept on the gh-pages branch (served by GitHub Pages).
-# One-time setup: see docs/RELEASING.md (GPG key, two secrets, enable Pages from the gh-pages branch).
 name: Publish APT repository
 on:
   push:
@@ -22,7 +20,11 @@ jobs:
       - run: npm ci
       - run: npx electron-builder --linux deb --publish never
       - name: Import signing key
-        run: echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+        env:
+          APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+          APT_GPG_KEY_ID: ${{ secrets.APT_GPG_KEY_ID }}
+        run: bash scripts/import-gpg-key.sh
       - name: Get existing repository (keeps older versions)
         run: |
           git fetch origin gh-pages:gh-pages || true
@@ -30,11 +32,12 @@ jobs:
       - name: Build and sign repository
         env:
           APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
-        run: ./scripts/make-apt-repo.sh apt-site "$(ls dist/*.deb | head -1)" "${{ secrets.APT_GPG_KEY_ID }}"
+          APT_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: bash scripts/make-apt-repo.sh apt-site "$(ls dist/*.deb | head -1)" "${{ secrets.APT_GPG_KEY_ID }}"
       - name: Publish to gh-pages
         run: |
           cd apt-site
-          [ -d .git ] || git init -b gh-pages
+          [ -e .git ] || git init -b gh-pages
           git config user.name "release-bot"; git config user.email "release-bot@users.noreply.github.com"
           touch .nojekyll
           git add -A && git commit -m "APT repository for ${GITHUB_REF_NAME}" || echo "nothing to commit"
