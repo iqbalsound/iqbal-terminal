@@ -1,3 +1,5 @@
+# Publishes a signed APT repository as assets of a GitHub Release tagged "apt".
+# (A .deb is over GitHub's 100 MB git file limit, so it cannot live in a branch; Release assets allow 2 GB.)
 name: Publish APT repository
 on:
   push:
@@ -25,20 +27,17 @@ jobs:
           APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
           APT_GPG_KEY_ID: ${{ secrets.APT_GPG_KEY_ID }}
         run: bash scripts/import-gpg-key.sh
-      - name: Get existing repository (keeps older versions)
-        run: |
-          git fetch origin gh-pages:gh-pages || true
-          if git rev-parse --verify gh-pages >/dev/null 2>&1; then git worktree add apt-site gh-pages; else mkdir apt-site; fi
-      - name: Build and sign repository
+      - name: Build and sign the repository files
         env:
           APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
-          APT_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
-        run: bash scripts/make-apt-repo.sh apt-site "$(ls dist/*.deb | head -1)" "${{ secrets.APT_GPG_KEY_ID }}"
-      - name: Publish to gh-pages
-        run: |
-          cd apt-site
-          [ -e .git ] || git init -b gh-pages
-          git config user.name "release-bot"; git config user.email "release-bot@users.noreply.github.com"
-          touch .nojekyll
-          git add -A && git commit -m "APT repository for ${GITHUB_REF_NAME}" || echo "nothing to commit"
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:gh-pages
+        run: bash scripts/make-apt-flat.sh apt-flat "$(ls dist/*.deb | head -1)" "${{ secrets.APT_GPG_KEY_ID }}"
+      - name: Publish to the "apt" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apt
+          name: APT repository (used by apt - please do not delete)
+          body: |
+            Signed APT repository files for Iqbal Terminal. Install instructions are in docs/PUBLISHING-REPOS.md.
+          prerelease: true
+          make_latest: "false"
+          files: apt-flat/*
